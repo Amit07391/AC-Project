@@ -12,7 +12,7 @@ order by ptid;
 drop table if exists ac_ehr_sol_lab_a1c_sol_tbl;
 
 create table ac_ehr_sol_lab_a1c_sol_tbl as
-select a.*,b.dt_rx_index, b.gender, b.ETHNICITY, b.DIVISION, date_add(b.dt_rx_index, 180) as fu_indx_dt, date_add(b.dt_rx_index, 30) as fu_30_indx_dt
+select a.*,b.dt_rx_index, b.gender, b.ETHNICITY, b.DIVISION, date_add(b.dt_rx_index, 180) as fu_indx_dt, date_add(b.dt_rx_index, 90) as fu_30_indx_dt
 from ac_ehr_lab_antibody_name_16_23_value a join ac_ehr_sol_study_final_pts b
 on a.ptid=b.ptid
 where isnotnull(b.dt_rx_index) and a.value between 5 and 15 

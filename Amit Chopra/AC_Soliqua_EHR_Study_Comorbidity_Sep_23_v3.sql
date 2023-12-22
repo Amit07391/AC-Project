@@ -326,6 +326,10 @@ order by ptid, diag_date;
 
 -- COMMAND ----------
 
+select distinct diagnosis_cd from ac_ehr_hypo_dx_comorb_bl
+
+-- COMMAND ----------
+
 select distinct test_name from ac_ehr_lab_202308
 where lower(test_name) like '%glucose%'
 
@@ -372,7 +376,7 @@ create or replace table ac_ehr_soliqua_hypo_lab_dx_bl as
 select distinct ptid, encid, DIAG_DATE, 'dx' as flag   from ac_ehr_hypo_dx_comorb_bl
 union
 select distinct ptid,encid, service_date, 'lab' as flag from ac_ehr_soliqua_hypo_lab_2
-where dt_rx_index between dt_rx_index - 180 and dt_rx_index;
+where service_date between dt_rx_index - 180 and dt_rx_index;
 
 select distinct * from ac_ehr_soliqua_hypo_lab_dx_bl
 order by ptid, diag_date;
@@ -406,7 +410,7 @@ create or replace table ac_ehr_soliqua_hypo_lab_dx_fu as
 select distinct ptid, DIAG_DATE, 'dx' as flag   from ac_ehr_hypo_dx_comorb_fu
 union
 select distinct ptid, service_date, 'lab' as flag from ac_ehr_soliqua_hypo_lab_2
-where dt_rx_index between dt_rx_index + 1 and dt_rx_index + 180;
+where service_date between dt_rx_index + 1 and dt_rx_index + 180;
 
 select distinct * from ac_ehr_soliqua_hypo_lab_dx_fu
 order by ptid, diag_date;
@@ -430,7 +434,7 @@ order by ptid, diag_date;
 -- COMMAND ----------
 
 create or replace table ac_dx_sol_bl_cci_pat as
-select distinct ptid, dx_name, Disease, weight from ac_dx_subset_CCI_soliq_6m_bl_pts
+select distinct ptid, dx_name, Disease, weight_old from ac_dx_subset_CCI_soliq_6m_bl_pts
 where DIAG_DATE between date_sub(dt_rx_index,180) and dt_rx_index
 order by 1,2,3,4;
 
@@ -440,7 +444,7 @@ order by 1,2,3,4;
 -- COMMAND ----------
 
 create or replace table ac_dx_sol_bl_cci_pat_2 as
-select distinct ptid, dx_name, disease, sum(weight) as weight_new from ac_dx_sol_bl_cci_pat
+select distinct ptid, dx_name, disease, sum(weight_old) as weight_new from ac_dx_sol_bl_cci_pat
 group by 1,2,3
 order by 1,2,3;
 
@@ -462,7 +466,7 @@ order by 1,2
 create or replace table ac_bl_sol_dx_cci_mean as
 select distinct 'Baseline [-180,0]' as period, 'CCI Score' as cat3, 'Mean of CCI Score' as description, count(distinct ptid) as n, mean(cci_score) as mean, std(cci_score) as std, min(cci_score) as min
         , percentile(cci_score,.25) as p25, percentile(cci_score,.5) as median, percentile(cci_score,.75) as p75, max(cci_score) as max
-from (select ptid, sum(weight) as cci_score from ac_dx_sol_bl_cci_pat group by ptid)
+from (select ptid, sum(weight_new) as cci_score from ac_dx_sol_bl_cci_pat_2 group by ptid)
 group by cat3, description
 order by cat3, description
 ;
@@ -472,13 +476,13 @@ select * from ac_bl_sol_dx_cci_mean;
 -- COMMAND ----------
 
 create or replace table ac_bl_dx_sol_cci_class as
-select distinct 'Baseline [-180,30]' as period, 'ECI Score Class' as cat3
+select distinct 'Baseline [-180,30]' as period, 'CCI Score Class' as cat3
 , case when cci_score<=0 then 'CCI Score: <=0'
        when cci_score=1 then 'CCI Score: 1'
        when cci_score=2 then 'CCI Score: 2'
        when cci_score>=3 then 'CCI Score:>= 3'
        end as description, count(distinct ptid) as n
-from (select ptid, sum(weight) as cci_score from ac_dx_sol_bl_cci_pat group by ptid)
+from (select ptid, sum(weight_new) as cci_score from ac_dx_sol_bl_cci_pat_2 group by ptid)
 group by cat3, description
 order by cat3, description
 ;

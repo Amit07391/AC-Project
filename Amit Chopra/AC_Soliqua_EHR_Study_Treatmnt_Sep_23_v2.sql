@@ -139,8 +139,8 @@ where ptid not in (select distinct ptid from ac_ehr_sol_rx_anti_dm_bl_2 where Dr
 -- group by ptid
 -- order by ptid;
 
-select distinct * from ac_ehr_sol_OAD_use_bl
-order by ptid;
+-- select distinct * from ac_ehr_sol_OAD_use_bl
+-- order by ptid;
 
 -- select count(distinct ptid) from ac_ehr_sol_OAD_use_bl
 -- where cnt>=3;
@@ -148,9 +148,9 @@ order by ptid;
 -- select count(distinct ptid) from ac_ehr_sol_rx_anti_dm_bl_2
 -- where drug_cat='OAD';
 
--- select rx_type, count(distinct ptid) from ac_ehr_sol_rx_anti_dm_bl_2
--- group by 1
--- order by 1 ;
+select rx_type, count(distinct ptid) from ac_ehr_sol_rx_anti_dm_bl_2
+group by 1
+order by 1 ;
 
 -- COMMAND ----------
 
